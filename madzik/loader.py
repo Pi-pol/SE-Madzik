@@ -4,25 +4,27 @@ import rasterio
 import tensorflow as tf
 from sklearn.model_selection import train_test_split
 import keras
+from typing import Generator
 
 
 class Loader:
-    def __init__(self, path):
+    def __init__(self, path: str) -> None:
         self.data_folder_path = path
 
-    def load_folders(self):
+    def load_folders(self) -> Generator[dict[str, np.ndarray]]:
         for folder in os.listdir(self.data_folder_path):
             if os.path.isdir(os.path.join(self.data_folder_path, folder)):
                 output = self._load_folder(
                     os.path.join(self.data_folder_path, folder))
                 yield output
+        raise StopIteration
 
-    def load_csv(self):
+    def load_csv(self) -> list[dict[str, str]]:
         for file in os.listdir(self.data_folder_path):
             if file.endswith(".csv"):
                 return self._parse_csv(os.path.join(self.data_folder_path, file))
 
-    def _load_folder(self, folder):
+    def _load_folder(self, folder) -> dict[str, np.ndarray]:
         output = {
             "mag1c": self._parse_tif(os.path.join(folder, "mag1c.tif")),
             "label_rgba": self._parse_tif(os.path.join(folder, "label_rgba.tif")),
@@ -47,15 +49,15 @@ class Loader:
         }
         return output
 
-    def load_folder_by_id(self, id):
+    def load_folder_by_id(self, id) -> dict[str, np.ndarray]:
         folder = os.path.join(self.data_folder_path, str(id))
         return self._load_folder(folder)
 
-    def _parse_tif(self, file):
+    def _parse_tif(self, file) -> np.ndarray:
         with rasterio.open(file) as img:
             return img.read()
 
-    def _parse_csv(self, file):
+    def _parse_csv(self, file) -> list[dict[str, str]]:
         data = []
         with open(file, "r") as f:
             columns = f.readline().strip().split(",")
@@ -64,12 +66,12 @@ class Loader:
                 data.append(dict(zip(columns, values)))
         return data
 
-    def _load_csv_to_id(self):
+    def _load_csv_to_id(self) -> list[tuple[str, bool]]:
         csv = self.load_csv()
         output = [(row["id"], row["has_plume"] == "True") for row in csv]
         return output
 
-    def combine_into_one_ndarray(self, data):
+    def combine_into_one_ndarray(self, data) -> np.ndarray:
         data.pop("weight")
         data.pop("label_rgba")
         data.pop("label_binary")
@@ -80,12 +82,12 @@ class Loader:
         stacked = np.stack(arrays, axis=-1)
         return stacked.astype(np.float32)
 
-    def create_color_composite(self, data):
+    def create_color_composite(self, data) -> np.ndarray:
         return np.stack((data["640nm"], data["550nm"], data["460nm"]), axis=-1)
 
 
 class DataSetLoader(keras.utils.PyDataset):
-    def __init__(self, ids: list | None = None, batch_size=32, data_loader: Loader = None, **kwargs):
+    def __init__(self, ids: list | None = None, batch_size=32, data_loader: Loader = None, **kwargs) -> None:
         self.data_loader = data_loader
         if ids is None:
             self.labels = self.data_loader._load_csv_to_id()
@@ -94,10 +96,10 @@ class DataSetLoader(keras.utils.PyDataset):
         self.batch_size = batch_size
         super().__init__(**kwargs)
 
-    def __len__(self):
+    def __len__(self) -> int:
         return len(self.labels) // self.batch_size
 
-    def __getitem__(self, idx):
+    def __getitem__(self, idx) -> tuple[np.ndarray, np.ndarray]:
         batch = self.labels[idx * self.batch_size: (idx + 1) * self.batch_size]
         data = [self.data_loader.load_folder_by_id(id) for id, _ in batch]
         x = np.stack([self.data_loader.combine_into_one_ndarray(d)
