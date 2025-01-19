@@ -17,9 +17,12 @@ class Loader:
                     os.path.join(self.data_folder_path, folder))
                 yield output
 
-    def load_csv(self):
+    def load_csv(self, name: str | None = None):
+        """ if name is None, it will load the first csv file in the folder """
         for file in os.listdir(self.data_folder_path):
-            if file.endswith(".csv"):
+            if name is None and file.endswith(".csv"):
+                return self._parse_csv(os.path.join(self.data_folder_path, file))
+            elif file == name:
                 return self._parse_csv(os.path.join(self.data_folder_path, file))
 
     def _load_folder(self, folder):
@@ -64,8 +67,11 @@ class Loader:
                 data.append(dict(zip(columns, values)))
         return data
 
-    def _load_csv_to_id(self):
-        csv = self.load_csv()
+    def load_csv_to_id(self, name: str | None = None):
+        if name is None:
+            csv = self.load_csv("train.csv")
+        else:
+            csv = self.load_csv(name)
         output = [(row["id"], row["has_plume"] == "True") for row in csv]
         return output
 
@@ -88,7 +94,7 @@ class DataSetLoader(keras.utils.PyDataset):
     def __init__(self, ids: list | None = None, batch_size=32, data_loader: Loader = None, **kwargs):
         self.data_loader = data_loader
         if ids is None:
-            self.labels = self.data_loader._load_csv_to_id()
+            self.labels = self.data_loader.load_csv_to_id()
         else:
             self.labels = [id for id in ids]
         self.batch_size = batch_size

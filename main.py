@@ -10,8 +10,8 @@ loader = Loader(DATA_PATH)
 trainer = PlumeTrainer(PLUMER({}), loader, "mse", "adam", {
     "test_size": 0.2,
     "validation_size": 0.2,
-    "batch_size": 32,
-    "epochs": 10,
+    "batch_size": 64,
+    "epochs": 20,
     "save_path": MODEL_OUTPUT_PATH + dt.datetime.now().strftime("%Y%m%d%H%M%S") + ".weights.h5",
     "load_path": MODEL_OUTPUT_PATH + CURRENT_MODEL_NAME
 })
