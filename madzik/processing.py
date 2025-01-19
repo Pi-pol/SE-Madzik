@@ -5,7 +5,7 @@ import numpy as np
 
 
 class PLUMER:
-    def __init__(self, opts):
+    def __init__(self, opts: dict[str, any]):
         self.opts = opts
         self._create_model()
 
@@ -31,11 +31,35 @@ class PLUMER:
     def preprocess(self, img: np.ndarray):
         return img
 
-    def load_weights(self, path):
+    def load_weights(self, path: str):
         self.model.load_weights(path)
 
     def parse_image(self, img: np.ndarray):
         self.model.predict(self.preprocess(img))
+        return img
+
+
+class GASSIAN:
+    # This is a placeholder for the real model which will do per pixel evaluation
+
+    def __init__(self, opts: dict[str, any]):
+        self.opts = opts
+
+    def _create_model(self):
+        self.model = keras.Sequential()
+        self.model.add(layers.Input(shape=(512, 512, 16)))
+        self.model.add(layers.Conv2D(
+            32, (3, 3), activation='relu'))
+        self.model.add(layers.Conv2D(
+            32, (3, 3), activation='relu'))
+        self.model.add(layers.Conv2D(
+            32, (3, 3), activation='relu'))
+        self.model.add(layers.Flatten())
+
+    def preprocess(self, img: np.ndarray):
+        return img
+
+    def parse_image(self, img: np.ndarray):
         return img
 
 
