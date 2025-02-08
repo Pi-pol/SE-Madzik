@@ -124,3 +124,71 @@ class HyperparameterOptimizer:
 
     def load(self):
         pass
+
+
+class GassianOptunaTrainer:
+    def __init__(self, model: GASSIAN, data_loader: Loader, opts: dict | None = None):
+        self.model = model
+        self.data_loader = data_loader
+        self.opts = opts
+
+    def train(self):
+        study = optuna.create_study(direction='maximize')
+        study.optimize(self.objective, n_trials=self.opts["n_trials"])
+
+    def objective(self, trial: optuna.trial.Trial):
+        trialopts = {
+            "multipliers": [
+                trial.suggest_float("multiplier1", 0.1, 1.0),
+                trial.suggest_float("multiplier2", 0.1, 1.0),
+                trial.suggest_float("multiplier3", 0.1, 1.0),
+                trial.suggest_float("multiplier4", 0.1, 1.0),
+                trial.suggest_float("multiplier5", 0.1, 1.0),
+                trial.suggest_float("multiplier6", 0.1, 1.0),
+                trial.suggest_float("multiplier7", 0.1, 1.0),
+                trial.suggest_float("multiplier8", 0.1, 1.0),
+                trial.suggest_float("multiplier9", 0.1, 1.0),
+                trial.suggest_float("multiplier10", 0.1, 1.0),
+                trial.suggest_float("multiplier11", 0.1, 1.0),
+                trial.suggest_float("multiplier12", 0.1, 1.0),
+                trial.suggest_float("multiplier13", 0.1, 1.0),
+                trial.suggest_float("multiplier14", 0.1, 1.0),
+                trial.suggest_float("multiplier15", 0.1, 1.0),
+            ],
+            "biases": [
+                trial.suggest_float("bias1", -100.0, 100.0),
+                trial.suggest_float("bias2", -100.0, 100.0),
+                trial.suggest_float("bias3", -100.0, 100.0),
+                trial.suggest_float("bias4", -100.0, 100.0),
+                trial.suggest_float("bias5", -100.0, 100.0),
+                trial.suggest_float("bias6", -100.0, 100.0),
+                trial.suggest_float("bias7", -100.0, 100.0),
+                trial.suggest_float("bias8", -100.0, 100.0),
+                trial.suggest_float("bias9", -100.0, 100.0),
+                trial.suggest_float("bias10", -100.0, 100.0),
+                trial.suggest_float("bias11", -100.0, 100.0),
+                trial.suggest_float("bias12", -100.0, 100.0),
+                trial.suggest_float("bias13", -100.0, 100.0),
+                trial.suggest_float("bias14", -100.0, 100.0),
+                trial.suggest_float("bias15", -100.0, 100.0),
+            ],
+            "weights": [
+                trial.suggest_float("weight1", 0.0, 1.0),
+                trial.suggest_float("weight2", 0.0, 1.0),
+                trial.suggest_float("weight3", 0.0, 1.0),
+                trial.suggest_float("weight4", 0.0, 1.0),
+                trial.suggest_float("weight5", 0.0, 1.0),
+                trial.suggest_float("weight6", 0.0, 1.0),
+                trial.suggest_float("weight7", 0.0, 1.0),
+                trial.suggest_float("weight8", 0.0, 1.0),
+                trial.suggest_float("weight9", 0.0, 1.0),
+                trial.suggest_float("weight10", 0.0, 1.0),
+                trial.suggest_float("weight11", 0.0, 1.0),
+                trial.suggest_float("weight12", 0.0, 1.0),
+                trial.suggest_float("weight13", 0.0, 1.0),
+                trial.suggest_float("weight14", 0.0, 1.0),
+                trial.suggest_float("weight15", 0.0, 1.0),
+            ]
+        }
+
+        GASSIAN = GASSIAN(self.opts)

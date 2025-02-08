@@ -2,6 +2,8 @@ import keras
 from keras import layers
 import tensorflow as tf
 import numpy as np
+import multiprocessing as mp
+from concurrent.futures import ThreadPoolExecutor
 
 
 class PLUMER:
@@ -42,27 +44,10 @@ class PLUMER:
 class GASSIAN:
     def __init__(self, opts):
         self.opts = opts
-        self._create_model()
-
-    def _create_model(self):
-        self.model = keras.Sequential()
-        self.model.add(layers.Input(shape=(1, 1, 16)))
-        self.model.add(layers.Dense(12, activation='relu'))
-        self.model.add(layers.Dense(6, activation='relu'))
-        self.model.add(layers.Dense(1, activation='sigmoid'))
-        self.model.compile(optimizer='adam',
-                           loss=tf.keras.losses.BinaryCrossentropy(),
-                           metrics=['accuracy'])
-        return self.model
 
     def preprocess(self, img: np.ndarray):
         return img
 
-    def load_weights(self, path: str):
-        self.model.load_weights(path)
-
     def parse_whole_image(self, img: np.ndarray):
-        preprocessed = self.preprocess(img)
-        # Predict for each pixel without using loops
-        np.vectorize(self.model.predict)(preprocessed)
-        return img
+        processed = np.dot(img, self.opts["processing_weights"])
+        return processed
