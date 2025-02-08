@@ -172,3 +172,5 @@ cython_debug/
 /paths/paths.py
 
 /output/*
+
+/madzik/models
