@@ -18,6 +18,7 @@ class PlumeTrainer:
             self.epochs = opts["epochs"]
             self.save_path = opts["save_path"]
             self.load_path = opts["load_path"]
+            self.callbacks = opts.get("callbacks", [])
         else:
             self.test_split = 0.2
             self.validation_split = 0.2
@@ -25,10 +26,15 @@ class PlumeTrainer:
             self.epochs = 10
             self.save_path = ""
             self.load_path = ""
+            self.callbacks = []
+        self.callbacks.append(tf.keras.callbacks.ModelCheckpoint(
+            "D:\\Projects\\SE-MADZIK\\training_models\\test1.keras", save_best_only=True))
+        self.callbacks.append(tf.keras.callbacks.TensorBoard(
+            log_dir="D:\\Projects\\SE-MADZIK\\logs", histogram_freq=1))
 
     def train(self):
         """Train the model"""
-        test_subjects = self.data_loader._load_csv_to_id()
+        test_subjects = self.data_loader.load_csv_to_id()
         train_subjects, val_subjects = train_test_split(
             test_subjects, test_size=self.test_split)
         train_data = DataSetLoader(
@@ -36,12 +42,13 @@ class PlumeTrainer:
         val_data = DataSetLoader(
             val_subjects, self.batch_size, self.data_loader)
         data = self.model.model.fit(train_data, epochs=self.epochs,
-                                    validation_data=val_data)
+                                    validation_data=val_data,
+                                    callbacks=self.callbacks)
         return data
 
     def evaluate(self):
         """Evaluate the model"""
-        test_subjects = self.data_loader._load_csv_to_id()
+        test_subjects = self.data_loader.load_csv_to_id()
         test_data = DataSetLoader(
             test_subjects, self.batch_size, self.data_loader)
         return self.model.model.evaluate(test_data)
@@ -66,6 +73,7 @@ class GassianTrainer:
             self.epochs = opts["epochs"]
             self.save_path = opts["save_path"]
             self.load_path = opts["load_path"]
+            self.callbacks = opts.get("callbacks", [])
         else:
             self.test_split = 0.2
             self.validation_split = 0.2
@@ -73,10 +81,11 @@ class GassianTrainer:
             self.epochs = 10
             self.save_path = ""
             self.load_path = ""
+            self.callbacks = []
 
     def train(self):
         """Train the model"""
-        test_subjects = self.data_loader._load_csv_to_id()
+        test_subjects = self.data_loader.load_csv_to_id()
         train_subjects, val_subjects = train_test_split(
             test_subjects, test_size=self.test_split)
         train_data = DataSetLoader(
@@ -84,12 +93,13 @@ class GassianTrainer:
         val_data = DataSetLoader(
             val_subjects, self.batch_size, self.data_loader)
         data = self.model.model.fit(train_data, epochs=self.epochs,
-                                    validation_data=val_data)
+                                    validation_data=val_data,
+                                    callbacks=self.callbacks)
         return data
 
     def evaluate(self):
         """Evaluate the model"""
-        test_subjects = self.data_loader._load_csv_to_id()
+        test_subjects = self.data_loader.load_csv_to_id()
         test_data = DataSetLoader(
             test_subjects, self.batch_size, self.data_loader)
         return self.model.model.evaluate(test_data)

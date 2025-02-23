@@ -1,0 +1,16 @@
+{
+  "sensitivity": 0.9375,
+  "specificity": 1.0,
+  "precision": 1.0,
+  "accuracy": 0.971875,
+  "fscore": 0.967741935483871,
+  "NPV": 0.9513513513513514,
+  "FPR": 0.0,
+  "IoU": 0.9375,
+  "MCC": 0.944400281603035,
+  "tt_TP": 135.0,
+  "tt_TN": 176.0,
+  "tt_FP": 0.0,
+  "tt_FN": 9.0,
+  "model": "models20250115002955.weights.h5"
+}

@@ -5,13 +5,14 @@ import tensorflow as tf
 from sklearn.model_selection import train_test_split
 import keras
 from typing import Generator
+import json
 
 
 class Loader:
     def __init__(self, path: str) -> None:
         self.data_folder_path = path
 
-    def load_folders(self) -> Generator[dict[str, np.ndarray]]:
+    def load_folders(self):
         for folder in os.listdir(self.data_folder_path):
             if os.path.isdir(os.path.join(self.data_folder_path, folder)):
                 output = self._load_folder(
@@ -99,14 +100,23 @@ class DataSetLoader(keras.utils.PyDataset):
             self.labels = self.data_loader.load_csv_to_id()
         else:
             self.labels = [id for id in ids]
+        self.labels_original = self.labels.copy()
         self.batch_size = batch_size
         super().__init__(**kwargs)
 
     def __len__(self) -> int:
         return len(self.labels) // self.batch_size
 
+    def get_batch(self, idx) -> list:
+        batch = []
+        while len(batch) < self.batch_size:
+            label = self.labels.pop(0)
+            if os.path.exists(os.path.join(self.data_loader.data_folder_path, label[0])):
+                batch.append(label)
+        return batch
+
     def __getitem__(self, idx) -> tuple[np.ndarray, np.ndarray]:
-        batch = self.labels[idx * self.batch_size: (idx + 1) * self.batch_size]
+        batch = self.get_batch(idx)
         data = [self.data_loader.load_folder_by_id(id) for id, _ in batch]
         x = np.stack([self.data_loader.combine_into_one_ndarray(d)
                      for d in data])
@@ -115,3 +125,19 @@ class DataSetLoader(keras.utils.PyDataset):
 
     def on_epoch_end(self):
         np.random.shuffle(self.labels)
+        self.labels = self.labels_original.copy()
+
+
+class JSONLogger(tf.keras.callbacks.Callback):
+    def __init__(self, json_path):
+        super().__init__()
+        self.json_path = json_path
+        self.logs = []
+
+    def on_epoch_end(self, epoch, logs=None):
+        print(
+            f"Epoch {epoch} ended, loss: {logs['loss']}, accuracy: {logs['accuracy']}")
+        self.logs.append(
+            {"epoch": epoch, "loss": logs["loss"], "accuracy": logs["accuracy"]})
+        with open(self.json_path, 'w') as f:
+            json.dump(self.logs, f)
